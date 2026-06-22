@@ -2,6 +2,7 @@ import { RoomCard } from "@/components/entities/RoomCard";
 import type { PricedRoom } from "@/components/entities/types";
 import type { SearchParams } from "@/components/shared/types/search";
 import { ArrowDown, SlidersHorizontal } from "lucide-react";
+import { RoomFilters } from "./RoomFilters";
 
 interface RoomListProps {
   rooms: PricedRoom[];
@@ -24,17 +25,7 @@ export function RoomList({ rooms, search }: RoomListProps) {
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap gap-2">
-          <span className="inline-flex h-8 items-center rounded-full border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-700">
-            All
-          </span>
-          <span className="inline-flex h-8 items-center rounded-full border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-700">
-            Refundable
-          </span>
-          <span className="inline-flex h-8 items-center rounded-full border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-700">
-            Breakfast
-          </span>
-        </div>
+        <RoomFilters />
         <span className="inline-flex items-center gap-2 text-xs font-semibold text-slate-500">
           <SlidersHorizontal className="size-4" aria-hidden="true" />
           Showing {rooms.length} rooms

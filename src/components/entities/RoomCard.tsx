@@ -1,7 +1,7 @@
 import { buildCheckoutUrl, formatMealPlan } from "@/components/entities/helpers";
 import type { PricedRoom } from "@/components/entities/types";
 import type { SearchParams } from "@/components/shared/types/search";
-import { format } from "date-fns";
+import { format, subDays } from "date-fns";
 import { Bath, BedDouble, Coffee, Maximize2, ShieldCheck, Users, Wifi } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -22,6 +22,7 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
 export function RoomCard({ room, search }: RoomCardProps) {
   const checkoutUrl = buildCheckoutUrl({ ...search, roomId: room.id });
   const mealPlan = formatMealPlan(room.mealPlan);
+  const freeCancellationUntil = subDays(search.checkIn, 3);
 
   return (
     <article className="grid overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm lg:grid-cols-[300px_1fr_220px]">
@@ -75,7 +76,7 @@ export function RoomCard({ room, search }: RoomCardProps) {
             <span className="inline-flex items-center gap-1.5 font-semibold text-emerald-700">
               <ShieldCheck className="size-4" aria-hidden="true" />
               Fully refundable before{" "}
-              {format(room.cancellationPolicy.until, "MMM d, h:mm a")}
+              {format(freeCancellationUntil, "MMM d, h:mm a")}
             </span>
           ) : (
             <span className="inline-flex items-center gap-1.5 font-semibold text-slate-700">

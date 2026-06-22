@@ -52,6 +52,10 @@ export function SearchPanel({ initialSearch }: SearchPanelProps) {
     children: query.children ?? initialQuery.children,
   };
 
+  const commitQuery = async (nextValues: typeof values): Promise<void> => {
+    await setQuery(nextValues);
+  };
+
   const minCheckIn: string = formatDateInput(today());
   const maxCheckIn: string = formatDateInput(addYears(today(), 1));
   const minCheckOut: string = values.checkIn;
@@ -65,17 +69,20 @@ export function SearchPanel({ initialSearch }: SearchPanelProps) {
         ? [...current, ...Array.from({ length: nextCount - current.length }, () => 7)]
         : current.slice(0, nextCount);
 
-    await setQuery({ children: nextChildren });
+    await commitQuery({
+      ...values,
+      children: nextChildren,
+    });
   };
 
   return (
     <section className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
-      <div className="grid grid-cols-1 gap-2 lg:grid-cols-[1fr_1fr_1fr_122px]">
-        <label className="flex min-h-20 items-center gap-3 rounded-md border border-slate-300 bg-white px-4 transition focus-within:border-brand focus-within:ring-2 focus-within:ring-focus-soft">
+      <div className="grid grid-cols-1 gap-2 lg:grid-cols-[minmax(180px,1fr)_minmax(180px,1fr)_minmax(300px,1fr)_auto]">
+        <label className="flex items-center gap-3 rounded-md border border-slate-300 bg-white px-4 py-1 transition focus-within:border-brand focus-within:ring-2 focus-within:ring-focus-soft">
           <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-500">
             <CalendarDays className="size-5" aria-hidden="true" />
           </span>
-          <span className="grid flex-1 gap-1.5">
+          <span className="grid flex-1 gap-0.5">
             <span className="text-[11px] font-semibold text-slate-500">Check in</span>
             <input
               className="w-full bg-transparent text-base font-semibold tabular-nums text-slate-950 outline-none"
@@ -84,7 +91,8 @@ export function SearchPanel({ initialSearch }: SearchPanelProps) {
               type="date"
               value={values.checkIn}
               onChange={(event) =>
-                setQuery({
+                commitQuery({
+                  ...values,
                   checkIn: event.target.value,
                   checkOut:
                     event.target.value >= values.checkOut
@@ -96,11 +104,11 @@ export function SearchPanel({ initialSearch }: SearchPanelProps) {
           </span>
         </label>
 
-        <label className="flex min-h-20 items-center gap-3 rounded-md border border-slate-300 bg-white px-4 transition focus-within:border-brand focus-within:ring-2 focus-within:ring-focus-soft">
+        <label className="flex items-center gap-3 rounded-md border border-slate-300 bg-white px-4 py-1 transition focus-within:border-brand focus-within:ring-2 focus-within:ring-focus-soft">
           <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-500">
             <CalendarDays className="size-5" aria-hidden="true" />
           </span>
-          <span className="grid flex-1 gap-1.5">
+          <span className="grid flex-1 gap-0.5">
             <span className="text-[11px] font-semibold text-slate-500">Check out</span>
             <input
               className="w-full bg-transparent text-base font-semibold tabular-nums text-slate-950 outline-none"
@@ -108,27 +116,32 @@ export function SearchPanel({ initialSearch }: SearchPanelProps) {
               min={minCheckOut}
               type="date"
               value={values.checkOut}
-              onChange={(event) => setQuery({ checkOut: event.target.value })}
+              onChange={(event) =>
+                commitQuery({
+                  ...values,
+                  checkOut: event.target.value,
+                })
+              }
             />
           </span>
         </label>
 
-        <div className="grid min-h-20 grid-cols-3 gap-2 rounded-md border border-slate-300 bg-slate-50/80 px-3 py-2.5">
+        <div className="grid grid-cols-3 gap-2 rounded-md border border-slate-300 bg-slate-50/80 px-3 py-1">
           <Stepper
-            icon={<BedDouble className="size-3.5" aria-hidden="true" />}
+            icon={<BedDouble className="size-2.5" aria-hidden="true" />}
             label="Rooms"
             max={8}
             min={1}
             value={values.rooms}
-            onChange={(rooms) => setQuery({ rooms })}
+            onChange={(rooms) => commitQuery({ ...values, rooms })}
           />
           <Stepper
-            icon={<Users className="size-3.5" aria-hidden="true" />}
+            icon={<Users className="size-2.5" aria-hidden="true" />}
             label="Adults"
             max={12}
             min={1}
             value={values.adults}
-            onChange={(adults) => setQuery({ adults })}
+            onChange={(adults) => commitQuery({ ...values, adults })}
           />
           <Stepper
             label="Children"
@@ -140,9 +153,9 @@ export function SearchPanel({ initialSearch }: SearchPanelProps) {
         </div>
 
         <button
-          className="inline-flex min-h-20 items-center justify-center gap-2 rounded-md bg-brand px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+          className="inline-flex h-12 w-full items-center justify-center gap-2 self-center rounded-md bg-brand px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 lg:h-11 lg:min-w-32 lg:w-auto"
           type="button"
-          onClick={() => setQuery(values)}
+          onClick={() => commitQuery(values)}
         >
           <Search className="size-4" aria-hidden="true" />
           Search
@@ -161,7 +174,10 @@ export function SearchPanel({ initialSearch }: SearchPanelProps) {
               onChange={(nextAge) => {
                 const nextChildren = [...values.children];
                 nextChildren[index] = nextAge;
-                setQuery({ children: nextChildren });
+                commitQuery({
+                  ...values,
+                  children: nextChildren,
+                });
               }}
             />
           ))}
