@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function NotFoundPage() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-page px-4 text-center text-slate-950">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4 text-center text-slate-950">
       <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
         Hotel deals
       </p>

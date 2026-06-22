@@ -21,9 +21,9 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
 
 
 export function RoomCard({ room, search }: RoomCardProps) {
-  const checkoutUrl = buildCheckoutUrl({ ...search, roomId: room.id });
-  const mealPlan = formatMealPlan(room.mealPlan);
-  const freeCancellationUntil = subDays(search.checkIn, 3);
+  const checkoutUrl: string = buildCheckoutUrl({ ...search, roomId: room.id });
+  const mealPlan: string | null = formatMealPlan(room.mealPlan);
+  const freeCancellationUntil: Date = subDays(search.checkIn, 3);
 
   return (
     <article className="grid overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm lg:grid-cols-[300px_1fr_220px]">
@@ -83,7 +83,7 @@ export function RoomCard({ room, search }: RoomCardProps) {
             </span>
           )}
           {mealPlan !== null ? (
-            <span className="inline-flex items-center gap-1.5 font-semibold text-slate-700">
+            <span className="inline-flex items-center gap-1.5 font-semibold text-slate-900">
               <Coffee className="size-4" aria-hidden="true" />
               {mealPlan}
             </span>

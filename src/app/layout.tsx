@@ -32,7 +32,7 @@ export default function RootLayout({
       <body className="flex min-h-full flex-col">
         <NuqsAdapter>
           <Header />
-          <main className="min-h-screen bg-page text-slate-950">{children}</main>
+          <main className="min-h-screen">{children}</main>
         </NuqsAdapter>
       </body>
     </html>
