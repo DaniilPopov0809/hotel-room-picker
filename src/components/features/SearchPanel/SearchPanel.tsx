@@ -126,7 +126,7 @@ export function SearchPanel({ initialSearch }: SearchPanelProps) {
           </span>
         </label>
 
-        <div className="grid grid-cols-3 gap-2 rounded-md border border-slate-300 bg-slate-50/80 px-3 py-1">
+        <div className="grid grid-cols-3 gap-2 rounded-md border border-slate-300 bg-slate-50/80 px-2 py-2 max-[359px]:flex max-[359px]:w-full max-[359px]:flex-col sm:px-3 sm:py-1">
           <Stepper
             icon={<BedDouble className="size-2.5" aria-hidden="true" />}
             label="Rooms"
