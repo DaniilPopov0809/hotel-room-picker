@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import "./globals.css";
+import { Header } from "@/components/features/Header/Header";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,6 +31,7 @@ export default function RootLayout({
     >
       <body className="flex min-h-full flex-col">
         <NuqsAdapter>
+          <Header />
           <main className="min-h-screen bg-page text-slate-950">{children}</main>
         </NuqsAdapter>
       </body>
