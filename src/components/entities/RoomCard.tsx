@@ -5,6 +5,7 @@ import { format, subDays } from "date-fns";
 import { Bath, BedDouble, Coffee, Maximize2, ShieldCheck, Users, Wifi } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { ROOM_BADGE_BG, ROOM_BADGE_LABEL } from "./constants";
 
 type RoomCardProps = {
   room: PricedRoom;
@@ -34,12 +35,9 @@ export function RoomCard({ room, search }: RoomCardProps) {
           sizes="(min-width: 1024px) 300px, 100vw"
           src={room.images[0]}
         />
-        <span className="absolute left-3 top-3 rounded-md bg-brand px-2.5 py-1 text-xs font-semibold text-white">
-          Low base price
-        </span>
-        <span className="absolute bottom-3 right-3 rounded-full bg-slate-950/75 px-2 py-1 text-xs font-semibold text-white">
-          1/5
-        </span>
+        {room.badge && <span className={`absolute left-3 top-3 rounded-md px-2.5 py-1 text-xs font-semibold text-white ${ROOM_BADGE_BG[room.badge]}`}>
+          {ROOM_BADGE_LABEL[room.badge]}
+        </span>}
       </div>
 
       <div className="flex flex-col gap-3 p-4">

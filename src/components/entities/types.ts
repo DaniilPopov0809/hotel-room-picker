@@ -8,6 +8,7 @@ export type CancellationPolicy =
     };
 
 export type MealPlan = "breakfast" | "half-board" | "full-board";
+export type RoomBadge = "good-price" | "top-deal";
 
 export interface Room {
   id: string;
@@ -23,6 +24,7 @@ export interface Room {
   mealPlan: MealPlan | null;
   images: string[];
   amenities: string[];
+  badge?: RoomBadge;
 };
 
 export interface PricedRoom extends Room {

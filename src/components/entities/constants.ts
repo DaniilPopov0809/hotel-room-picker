@@ -1,5 +1,15 @@
-import type { Room } from "@/components/entities/types";
+import type { Room, RoomBadge } from "@/components/entities/types";
 import { addDays } from "date-fns";
+
+export const ROOM_BADGE_BG: Record<RoomBadge, string> = {
+  "good-price": "bg-brand",
+  "top-deal": "bg-emerald-600",
+}
+
+export const ROOM_BADGE_LABEL: Record<RoomBadge, string> = {
+  "good-price": "Good price",
+  "top-deal": "Top deal",
+}
 
 export const rooms: Room[] = [
   {
@@ -21,6 +31,7 @@ export const rooms: Room[] = [
       "https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=900&q=80",
     ],
     amenities: ["Free WiFi", "City view", "Air conditioning"],
+    badge: 'good-price',
   },
   {
     id: "accessible-king",
@@ -80,5 +91,6 @@ export const rooms: Room[] = [
       "https://images.unsplash.com/photo-1566665797739-1674de7a421a?auto=format&fit=crop&w=900&q=80",
     ],
     amenities: ["Kitchenette", "Extra beds", "Breakfast table"],
+    badge: 'top-deal'
   },
 ];
