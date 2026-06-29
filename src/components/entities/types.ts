@@ -12,6 +12,7 @@ export type RoomBadge = "good-price" | "top-deal";
 
 export interface Room {
   id: string;
+  planId: string;
   name: string;
   description?: string;
   maxAdults: number;

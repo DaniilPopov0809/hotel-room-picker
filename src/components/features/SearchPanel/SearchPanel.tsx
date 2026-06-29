@@ -2,17 +2,17 @@
 
 import type { SearchParsers } from "@/components/features/SearchPanel/types";
 import { clampNumber } from "@/components/shared/lib/common";
-import { formatDateInput, today } from "@/components/shared/lib/dates";
+import { formatDateInput, today, parseDateInput } from "@/components/shared/lib/dates";
 import type { SearchParams } from "@/components/shared/types/search";
-import { addDays, addMonths, addYears } from "date-fns";
-import { BedDouble, CalendarDays, Search, Users } from "lucide-react";
+import { addDays, addMonths, addYears, isBefore, isAfter } from "date-fns";
+import { BedDouble, CalendarDays, Users } from "lucide-react";
 import {
   parseAsArrayOf,
   parseAsInteger,
   parseAsString,
   useQueryStates,
 } from "nuqs";
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Stepper } from "../../shared/ui/Stepper";
 
 interface SearchPanelProps {
@@ -56,10 +56,114 @@ export function SearchPanel({ initialSearch }: SearchPanelProps) {
     await setQuery(nextValues);
   };
 
-  const minCheckIn: string = formatDateInput(today());
-  const maxCheckIn: string = formatDateInput(addYears(today(), 1));
-  const minCheckOut: string = values.checkIn;
-  const maxCheckOut: string = formatDateInput(addMonths(new Date(values.checkIn), 1));
+  // Local string state for input controls to prevent crashes during manual editing
+  const [checkInInput, setCheckInInput] = useState(values.checkIn);
+  const [checkOutInput, setCheckOutInput] = useState(values.checkOut);
+
+  // Sync inputs with URL changes (e.g. initial load or back/forward navigation)
+  useEffect(() => {
+    setCheckInInput(values.checkIn);
+  }, [values.checkIn]);
+
+  useEffect(() => {
+    setCheckOutInput(values.checkOut);
+  }, [values.checkOut]);
+
+  // Safe min/max calculations to prevent RangeError crashes
+  const parsedLocalCheckIn = parseDateInput(checkInInput);
+  const minCheckInStr = formatDateInput(today());
+  const maxCheckInStr = formatDateInput(addYears(today(), 1));
+
+  const minCheckOutStr = parsedLocalCheckIn
+    ? formatDateInput(addDays(parsedLocalCheckIn, 1))
+    : formatDateInput(addDays(today(), 1));
+
+  const maxCheckOutStr = parsedLocalCheckIn
+    ? formatDateInput(addMonths(parsedLocalCheckIn, 1))
+    : formatDateInput(addMonths(addDays(today(), 1), 1));
+
+  // Client-side validation logic
+  const errors = useMemo(() => {
+    const errs: { checkIn?: string; checkOut?: string } = {};
+    const pCheckIn = parseDateInput(checkInInput);
+    const pCheckOut = parseDateInput(checkOutInput);
+
+    if (!checkInInput) {
+      errs.checkIn = "Check-in date is required";
+    } else if (!pCheckIn) {
+      errs.checkIn = "Invalid check-in date";
+    } else {
+      if (isBefore(pCheckIn, today())) {
+        errs.checkIn = "Cannot be in the past";
+      } else if (isAfter(pCheckIn, addYears(today(), 1))) {
+        errs.checkIn = "Max 1 year in advance";
+      }
+    }
+
+    if (!checkOutInput) {
+      errs.checkOut = "Check-out date is required";
+    } else if (!pCheckOut) {
+      errs.checkOut = "Invalid check-out date";
+    } else if (pCheckIn) {
+      if (!isAfter(pCheckOut, pCheckIn)) {
+        errs.checkOut = "Must be after check-in";
+      } else if (isAfter(pCheckOut, addMonths(pCheckIn, 1))) {
+        errs.checkOut = "Stay cannot exceed 1 month";
+      }
+    }
+
+    return errs;
+  }, [checkInInput, checkOutInput]);
+
+  const handleCheckInChange = (newVal: string) => {
+    setCheckInInput(newVal);
+
+    const parsedIn = parseDateInput(newVal);
+    if (!parsedIn) return; // Keep input local, do not commit.
+
+    let nextCheckOut = checkOutInput;
+    const parsedOut = parseDateInput(checkOutInput);
+
+    if (isBefore(parsedIn, today()) || isAfter(parsedIn, addYears(today(), 1))) {
+      return;
+    }
+
+    if (parsedOut && !isAfter(parsedOut, parsedIn)) {
+      const adjustedOut = addDays(parsedIn, 1);
+      nextCheckOut = formatDateInput(adjustedOut);
+      setCheckOutInput(nextCheckOut);
+    }
+
+    const finalParsedOut = parseDateInput(nextCheckOut);
+    if (finalParsedOut && isAfter(finalParsedOut, parsedIn) && !isAfter(finalParsedOut, addMonths(parsedIn, 1))) {
+      commitQuery({
+        ...values,
+        checkIn: newVal,
+        checkOut: nextCheckOut,
+      });
+    } else {
+      commitQuery({
+        ...values,
+        checkIn: newVal,
+      });
+    }
+  };
+
+  const handleCheckOutChange = (newVal: string) => {
+    setCheckOutInput(newVal);
+
+    const parsedIn = parseDateInput(checkInInput);
+    const parsedOut = parseDateInput(newVal);
+
+    if (!parsedIn || !parsedOut) return; // Do not commit invalid dates to URL.
+
+    if (isAfter(parsedOut, parsedIn) && !isAfter(parsedOut, addMonths(parsedIn, 1))) {
+      commitQuery({
+        ...values,
+        checkOut: newVal,
+      });
+    }
+  };
 
   const updateChildrenCount = async (count: number): Promise<void> => {
     const nextCount = clampNumber(count, 0, 8);
@@ -77,56 +181,64 @@ export function SearchPanel({ initialSearch }: SearchPanelProps) {
 
   return (
     <section className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
-      <div className="grid grid-cols-1 gap-2 lg:grid-cols-[minmax(180px,1fr)_minmax(180px,1fr)_minmax(300px,1fr)_auto]">
-        <label className="flex items-center gap-3 rounded-md border border-slate-300 bg-white px-4 py-1 transition focus-within:border-brand focus-within:ring-2 focus-within:ring-focus-soft">
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-500">
-            <CalendarDays className="size-5" aria-hidden="true" />
-          </span>
-          <span className="grid flex-1 gap-0.5">
-            <span className="text-[11px] font-semibold text-slate-500">Check in</span>
-            <input
-              className="w-full bg-transparent text-base font-semibold tabular-nums text-slate-950 outline-none"
-              max={maxCheckIn}
-              min={minCheckIn}
-              type="date"
-              value={values.checkIn}
-              onChange={(event) =>
-                commitQuery({
-                  ...values,
-                  checkIn: event.target.value,
-                  checkOut:
-                    event.target.value >= values.checkOut
-                      ? formatDateInput(addDays(new Date(event.target.value), 1))
-                      : values.checkOut,
-                })
-              }
-            />
-          </span>
-        </label>
+      <div className="grid grid-cols-1 gap-3 items-start lg:grid-cols-[minmax(180px,1fr)_minmax(180px,1fr)_minmax(300px,1fr)]">
+        <div className="flex flex-col gap-1">
+          <label className={`flex items-center gap-3 rounded-md border px-4 py-1 transition focus-within:ring-2 ${
+            errors.checkIn
+              ? "border-red-300 focus-within:border-red-500 focus-within:ring-red-100"
+              : "border-slate-300 focus-within:border-brand focus-within:ring-focus-soft"
+          }`}>
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-500">
+              <CalendarDays className="size-5" aria-hidden="true" />
+            </span>
+            <span className="grid flex-1 gap-0.5">
+              <span className="text-[11px] font-semibold text-slate-500">Check in</span>
+              <input
+                className="w-full bg-transparent text-base font-semibold tabular-nums text-slate-950 outline-none"
+                max={maxCheckInStr}
+                min={minCheckInStr}
+                type="date"
+                value={checkInInput}
+                onChange={(event) => handleCheckInChange(event.target.value)}
+              />
+            </span>
+          </label>
+          {errors.checkIn && (
+            <span className="px-1 text-xs font-semibold text-red-600">
+              {errors.checkIn}
+            </span>
+          )}
+        </div>
 
-        <label className="flex items-center gap-3 rounded-md border border-slate-300 bg-white px-4 py-1 transition focus-within:border-brand focus-within:ring-2 focus-within:ring-focus-soft">
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-500">
-            <CalendarDays className="size-5" aria-hidden="true" />
-          </span>
-          <span className="grid flex-1 gap-0.5">
-            <span className="text-[11px] font-semibold text-slate-500">Check out</span>
-            <input
-              className="w-full bg-transparent text-base font-semibold tabular-nums text-slate-950 outline-none"
-              max={maxCheckOut}
-              min={minCheckOut}
-              type="date"
-              value={values.checkOut}
-              onChange={(event) =>
-                commitQuery({
-                  ...values,
-                  checkOut: event.target.value,
-                })
-              }
-            />
-          </span>
-        </label>
+        <div className="flex flex-col gap-1">
+          <label className={`flex items-center gap-3 rounded-md border px-4 py-1 transition focus-within:ring-2 ${
+            errors.checkOut
+              ? "border-red-300 focus-within:border-red-500 focus-within:ring-red-100"
+              : "border-slate-300 focus-within:border-brand focus-within:ring-focus-soft"
+          }`}>
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-500">
+              <CalendarDays className="size-5" aria-hidden="true" />
+            </span>
+            <span className="grid flex-1 gap-0.5">
+              <span className="text-[11px] font-semibold text-slate-500">Check out</span>
+              <input
+                className="w-full bg-transparent text-base font-semibold tabular-nums text-slate-950 outline-none"
+                max={maxCheckOutStr}
+                min={minCheckOutStr}
+                type="date"
+                value={checkOutInput}
+                onChange={(event) => handleCheckOutChange(event.target.value)}
+              />
+            </span>
+          </label>
+          {errors.checkOut && (
+            <span className="px-1 text-xs font-semibold text-red-600">
+              {errors.checkOut}
+            </span>
+          )}
+        </div>
 
-        <div className="grid grid-cols-3 gap-2 rounded-md border border-slate-300 bg-slate-50/80 px-2 py-2 max-[359px]:flex max-[359px]:w-full max-[359px]:flex-col sm:px-3 sm:py-1">
+        <div className="grid grid-cols-3 gap-2 rounded-md border border-slate-300 bg-slate-50/80 px-2 py-2 max-[359px]:flex max-[359px]:w-full max-[359px]:flex-col sm:px-3 sm:py-1 self-start min-h-[50px] items-center">
           <Stepper
             icon={<BedDouble className="size-2.5" aria-hidden="true" />}
             label="Rooms"
@@ -151,15 +263,6 @@ export function SearchPanel({ initialSearch }: SearchPanelProps) {
             onChange={updateChildrenCount}
           />
         </div>
-
-        <button
-          className="inline-flex h-12 w-full items-center justify-center gap-2 self-center rounded-md bg-brand px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 lg:h-11 lg:min-w-32 lg:w-auto"
-          type="button"
-          onClick={() => commitQuery(values)}
-        >
-          <Search className="size-4" aria-hidden="true" />
-          Search
-        </button>
       </div>
 
       {values.children.length > 0 ? (

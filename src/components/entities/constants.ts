@@ -14,6 +14,7 @@ export const ROOM_BADGE_LABEL: Record<RoomBadge, string> = {
 export const rooms: Room[] = [
   {
     id: "king-suite",
+    planId: "king-suite-breakfast-plan",
     name: "King Suite",
     description: "Bright suite with a separate sitting area and balcony view.",
     maxAdults: 2,
@@ -35,6 +36,7 @@ export const rooms: Room[] = [
   },
   {
     id: "accessible-king",
+    planId: "accessible-king-basic-plan",
     name: "King Suite with Accessible Roll-in Shower",
     description: "Accessible room with generous floor space and calm neutral tones.",
     maxAdults: 3,
@@ -54,6 +56,7 @@ export const rooms: Room[] = [
   },
   {
     id: "two-queen",
+    planId: "two-queen-half-board-plan",
     name: "King Bed Accessible Tub",
     description: "Comfortable room with accessible bath and a quiet courtyard side.",
     maxAdults: 2,
@@ -74,6 +77,7 @@ export const rooms: Room[] = [
   },
   {
     id: "family-studio",
+    planId: "family-studio-full-board-plan",
     name: "Family Studio",
     description: "Open studio for larger families with two sleeping zones.",
     maxAdults: 4,

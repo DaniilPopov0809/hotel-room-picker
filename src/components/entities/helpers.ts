@@ -31,6 +31,8 @@ export function buildCheckoutUrl(params: CheckoutParams): string {
     checkOut: formatDateInput(params.checkOut),
     rooms: String(params.rooms),
     adults: String(params.adults),
+    price: String(params.price),
+    planId: params.planId,
   });
 
   if (params.childrenAges.length > 0) {

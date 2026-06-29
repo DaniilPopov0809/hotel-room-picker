@@ -21,7 +21,12 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
 
 
 export function RoomCard({ room, search }: RoomCardProps) {
-  const checkoutUrl: string = buildCheckoutUrl({ ...search, roomId: room.id });
+  const checkoutUrl: string = buildCheckoutUrl({
+    ...search,
+    roomId: room.id,
+    price: room.totalPrice,
+    planId: room.planId,
+  });
   const mealPlan: string | null = formatMealPlan(room.mealPlan);
   const freeCancellationUntil: Date = subDays(search.checkIn, 3);
 
