@@ -1,7 +1,7 @@
 import { RoomCard } from "@/components/entities/RoomCard";
 import type { PricedRoom } from "@/components/entities/types";
 import type { SearchParams } from "@/components/shared/types/search";
-import { ArrowDown, SlidersHorizontal } from "lucide-react";
+import { SlidersHorizontal } from "lucide-react";
 import { RoomFilters } from "./RoomFilters";
 
 interface RoomListProps {
@@ -12,17 +12,6 @@ interface RoomListProps {
 export function RoomList({ rooms, search }: RoomListProps) {
   return (
     <section className="flex flex-col gap-4">
-      <div className="flex items-start gap-3 rounded-lg border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-950">
-        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
-          <ArrowDown className="size-4" aria-hidden="true" />
-        </span>
-        <div>
-          <p className="font-semibold">Price is lower than usual</p>
-          <p className="mt-0.5 text-xs text-emerald-800">
-            You have great options for your dates.
-          </p>
-        </div>
-      </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <RoomFilters />
